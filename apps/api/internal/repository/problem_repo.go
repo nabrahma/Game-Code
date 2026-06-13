@@ -71,8 +71,28 @@ func (r *problemRepo) GetBySlug(ctx context.Context, slug string) (*domain.Probl
         Title:          "Sample Problem Title",
         Difficulty:     domain.DifficultyMedium,
         Status:         domain.ProblemStatusPublished,
-        Description:    "This is a sample description of the problem context.",
+        Description:    "This is a sample description of the problem context. You need to implement an algorithm to solve this.\n\n### Requirements\n- Be fast\n- Be memory efficient",
         Constraints:    "1 <= N <= 100",
         AcceptanceRate: 50.0,
+        Examples: []domain.ProblemExample{
+            {
+                ID:          uuid.New(),
+                OrderIndex:  1,
+                Input:       "nums = [1,2,3]",
+                Output:      "[1,2,3]",
+                Explanation: "Just return the array.",
+            },
+        },
+        Hints: []domain.ProblemHint{
+            {
+                ID:         uuid.New(),
+                OrderIndex: 1,
+                Content:    "Think about using a hash map.",
+            },
+        },
+        StarterCode: []domain.StarterCode{
+            {Language: domain.LanguageCSharp, Code: "public class Solution {\n    public int[] Solve(int[] nums) {\n        \n    }\n}"},
+            {Language: domain.LanguageCPP, Code: "class Solution {\npublic:\n    vector<int> solve(vector<int>& nums) {\n        \n    }\n};"},
+        },
     }, nil
 }

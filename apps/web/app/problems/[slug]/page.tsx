@@ -1,43 +1,75 @@
 "use client";
 
-import { useProblem } from "@/lib/hooks/useProblems";
+import React, { useState } from "react";
 import { useParams } from "next/navigation";
-import { DifficultyBadge } from "@/components/ui/DifficultyBadge";
+import { useProblem } from "@/lib/hooks/useProblems";
+import { ProblemDetailHeader } from "@/components/problems/solve/ProblemDetailHeader";
+import { ProblemDetailTabs } from "@/components/problems/solve/ProblemDetailTabs";
+import { ProblemDescription } from "@/components/problems/solve/ProblemDescription";
+import { ProblemExamples } from "@/components/problems/solve/ProblemExamples";
 
-export default function ProblemDetailPage() {
+export default function ProblemSolvePage() {
   const params = useParams();
   const slug = params.slug as string;
-  
   const { data: problem, isLoading, error } = useProblem(slug);
 
+  const [activeTab, setActiveTab] = useState<"description" | "submissions" | "editorial">("description");
+
   if (isLoading) {
-    return <div className="p-8 text-center text-zinc-500">Loading problem details...</div>;
+    return (
+      <div className="flex h-full items-center justify-center text-zinc-500">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
+      </div>
+    );
   }
 
   if (error || !problem) {
-    return <div className="p-8 text-center text-red-500">Failed to load problem. It might not exist.</div>;
+    return (
+      <div className="flex h-full items-center justify-center text-red-500">
+        Failed to load problem data.
+      </div>
+    );
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">{problem.title}</h1>
-        <DifficultyBadge difficulty={problem.difficulty} />
-      </div>
+    <div className="flex h-full flex-col bg-[#0A0A0A] overflow-hidden rounded-lg">
+      <ProblemDetailHeader 
+        title={problem.title} 
+        slug={problem.slug} 
+        difficulty={problem.difficulty}
+        isFavorite={problem.is_favorite}
+      />
+      
+      <ProblemDetailTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <div className="prose prose-invert max-w-none rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
-        <p className="text-zinc-300">{problem.description}</p>
-        
-        <h3 className="mt-8 text-lg font-semibold text-white">Constraints</h3>
-        <code className="block rounded bg-zinc-950 p-3 text-sm text-zinc-400">
-          {problem.constraints}
-        </code>
-      </div>
+      <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-700">
+        {activeTab === "description" && (
+          <div className="pb-10">
+            <ProblemDescription content={problem.description} />
+            <ProblemExamples examples={problem.examples || []} />
+            
+            {problem.constraints && (
+              <div className="mt-8">
+                <h3 className="mb-3 text-sm font-semibold text-zinc-300">Constraints:</h3>
+                <code className="block whitespace-pre-wrap rounded-md bg-zinc-900 p-3 text-sm text-zinc-400 border border-zinc-800">
+                  {problem.constraints}
+                </code>
+              </div>
+            )}
+          </div>
+        )}
 
-      <div className="mt-8 rounded-lg border border-zinc-800 bg-zinc-900/50 p-8 text-center">
-        <p className="text-zinc-500">
-          Phase 3: Code Editor and Execution Environment will go here.
-        </p>
+        {activeTab === "submissions" && (
+          <div className="flex h-full items-center justify-center text-zinc-500 text-sm">
+            Please log in to view your submissions.
+          </div>
+        )}
+
+        {activeTab === "editorial" && (
+          <div className="flex h-full items-center justify-center text-zinc-500 text-sm">
+            Editorial content will be available after solving or unlocking.
+          </div>
+        )}
       </div>
     </div>
   );

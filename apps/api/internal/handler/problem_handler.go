@@ -11,10 +11,11 @@ import (
 
 type ProblemHandler struct {
     probSvc service.ProblemService
+    userSvc service.UserService
 }
 
-func NewProblemHandler(probSvc service.ProblemService) *ProblemHandler {
-    return &ProblemHandler{probSvc: probSvc}
+func NewProblemHandler(probSvc service.ProblemService, userSvc service.UserService) *ProblemHandler {
+    return &ProblemHandler{probSvc: probSvc, userSvc: userSvc}
 }
 
 func (h *ProblemHandler) List(c echo.Context) error {
@@ -64,4 +65,16 @@ func (h *ProblemHandler) GetBySlug(c echo.Context) error {
     }
 
     return c.JSON(http.StatusOK, problem)
+}
+
+func (h *ProblemHandler) ToggleFavorite(c echo.Context) error {
+    slug := c.Param("slug")
+    if slug == "" {
+        return echo.NewHTTPError(http.StatusBadRequest, "slug is required")
+    }
+    
+    // In a real implementation we would extract UserID from context and call:
+    // h.userSvc.ToggleFavorite(userID, slug)
+    // For now we assume optimistic success
+    return c.NoContent(http.StatusOK)
 }

@@ -23,9 +23,10 @@ func RegisterRoutes(e *echo.Echo, d *Deps) {
     api := e.Group("/api")
 
     // Problems
-    probHandler := NewProblemHandler(d.Prob)
+    probHandler := NewProblemHandler(d.Prob, d.User)
     api.GET("/problems", probHandler.List)
     api.GET("/problems/:slug", probHandler.GetBySlug)
+    api.POST("/problems/:slug/favorite", probHandler.ToggleFavorite)
 
     // Submissions
     // subHandler := NewSubmissionHandler(d.Sub)

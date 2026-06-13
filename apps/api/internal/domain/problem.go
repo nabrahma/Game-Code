@@ -57,6 +57,7 @@ type Problem struct {
     IsFavorite         *bool            `json:"is_favorite,omitempty"`
 }
 
+
 type ProblemSummary struct {
     ID             uuid.UUID  `json:"id"`
     Slug           string     `json:"slug"`
