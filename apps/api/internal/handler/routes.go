@@ -32,6 +32,11 @@ func RegisterRoutes(e *echo.Echo, d *Deps) {
     // subHandler := NewSubmissionHandler(d.Sub)
     // api.POST("/submissions", subHandler.Create)
     
+    // Execution
+    runHandler := NewRunHandler(d.Run)
+    api.POST("/run", runHandler.ExecuteCode)
+    api.GET("/run/:runId/stream", runHandler.StreamRunLogs)
+    
     // Auth (stubs for Phase 1)
     // authHandler := NewAuthHandler(d.Auth)
     // api.POST("/auth/logout", authHandler.Logout)
