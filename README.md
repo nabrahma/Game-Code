@@ -16,7 +16,7 @@
 
 **GameCode** is an open-source, high-performance platform providing "LeetCode-density, LeetCode-speed" practice tailored specifically for game development. 
 
-Whether you're mastering spatial math for Unity (C#), deep engine architecture for Unreal Engine (C++), procedural generation in Godot (GDScript), or networking in Roblox (Lua)—GameCode offers isolated, frictionless code execution without the bloat.
+Whether you're mastering spatial math for Unity (C#), deep engine architecture for Unreal Engine (C++), procedural generation in Godot (GDScript), or networking in Roblox (Lua)—GameCode offers frictionless code execution, detailed execution constraints, and professional code evaluations.
 
 ---
 
@@ -26,7 +26,7 @@ GameCode is built on a few core principles:
 1. **Engine-Agnostic Concepts:** We focus on the math, algorithms, and architectural patterns underlying modern game engines, rather than engine-specific API memorization.
 2. **Zero Gamification:** No streaks, no coins, no badges, no social feeds. We respect your time. Just you, the editor, and the compiler.
 3. **Frictionless Practice:** Instant code execution, instant feedback, and zero setup.
-4. **Performance Above All:** The entire backend and execution pipeline is written in Go to guarantee blazing fast runtimes and robust concurrency.
+4. **Professional Standards:** The entire backend and execution pipeline is engineered using industry-standard tools and frameworks designed for scale.
 
 ---
 
@@ -38,17 +38,18 @@ GameCode employs a highly optimized monorepo architecture, utilizing a decoupled
 - **Framework:** Next.js 14 (App Router)
 - **Styling:** Tailwind CSS + Radix UI Primitives
 - **State Management:** TanStack React Query
+- **Authentication:** NextAuth.js (Auth.js) for OAuth and Credential management
 - **Editor:** Monaco Editor (VS Code's core editor)
 
 ### Backend (`apps/api`)
 - **Core:** Go 1.22+ with the Echo (v4) web framework
-- **Database:** PostgreSQL via `pgx/v5` and strictly typed `sqlc` queries
-- **Caching & Queues:** Redis with `asynq` for background code-execution jobs
-- **Security:** JWT authentication (Access/Refresh tokens) alongside Magic Links and OAuth (GitHub/Google)
+- **Database:** PostgreSQL managed via **GORM** for robust, expressive data access
+- **Caching:** Redis for low-latency state and session storage
+- **Concurrency:** Native Go routines for parallel execution handling
 
 ### Code Execution Engine
-- **Sandboxing:** Code is executed in dynamically spun-up, ephemeral Docker containers.
-- **Constraints:** Strict security parameters applied per execution (Network disabled, read-only filesystem, 256MB RAM cap, 2-second timeout).
+- **Sandboxing:** Code is executed securely using the open-source **Judge0** execution engine.
+- **Constraints:** Strict security parameters applied per execution (Network disabled, read-only filesystem, strict RAM caps, and runtime limits).
 - **Supported Languages:** C# (`dotnet`), C++ (`g++`), Lua (`lua5.4`), GDScript (`godot --headless`).
 
 ---
@@ -56,10 +57,9 @@ GameCode employs a highly optimized monorepo architecture, utilizing a decoupled
 ## ✨ Features
 
 - ⚡ **Multi-Language Support**: Write and execute code natively in C#, C++, Lua, and GDScript.
-- 🔍 **Full-Text Search**: Instantly find problems using PostgreSQL trigram indexing (`pg_trgm`).
-- 📝 **Editorials**: Comprehensive write-ups with engine-specific variants (e.g., "How this applies to Unity vs. Unreal").
-- 🔒 **Secure Authentication**: Robust session management with JWTs, Refresh tokens, OAuth, and email Magic Links.
-- 🐳 **Isolated Sandboxes**: Highly secure code execution environment.
+- 🎯 **Advanced Submission Evaluation**: Batch testcase evaluation running seamlessly against Judge0 APIs.
+- 📊 **Progress Tracking**: Track your attempts, accepted solutions, runtime performance, and memory footprint.
+- 🔒 **Secure Authentication**: Robust session management out-of-the-box with NextAuth.
 - 🌙 **Gorgeous Dark Mode**: A sleek, distraction-free interface built for late-night coding.
 
 ---
@@ -69,35 +69,33 @@ GameCode employs a highly optimized monorepo architecture, utilizing a decoupled
 ### Prerequisites
 Before you begin, ensure you have the following installed:
 - [Go 1.22+](https://go.dev/)
-- [Node.js 20+](https://nodejs.org/) & `pnpm`/`npm`
-- [Docker Desktop](https://www.docker.com/products/docker-desktop)
-- PostgreSQL & Redis (Can be run locally via Docker Compose)
+- [Node.js 20+](https://nodejs.org/) & `npm`
+- PostgreSQL & Redis (Can be run locally or via Docker Compose)
+- A running instance of [Judge0 API](https://github.com/judge0/judge0) (or point to the public rapid API)
 
-### 1. Local Infrastructure Setup
-Clone the repository and start the underlying database and cache layers using the provided Docker Compose file:
-```bash
-git clone https://github.com/nabrahma/Game-Code.git
-cd Game-Code
-docker-compose -f docker-compose.dev.yml up -d
-```
+### 1. Database Setup
+Ensure PostgreSQL is running locally on port `5432` with a database named `gamecode`. GORM will automatically migrate and create the necessary tables.
 
 ### 2. Backend Setup
-Navigate to the API folder, configure your environment variables, and run the backend server alongside the execution worker:
+Navigate to the API folder, configure your environment variables, and start the backend server:
 ```bash
 cd apps/api
 cp .env.example .env
 
+# Configure your DATABASE_URL in the .env file
+# Format: postgres://username:password@localhost:5432/gamecode?sslmode=disable
+
 # Start the API server (Port 8080)
 go run cmd/api/main.go
-
-# In a new terminal, start the Asynq worker for code execution
-go run cmd/worker/main.go
 ```
 
 ### 3. Frontend Setup
 Navigate to the web folder, install dependencies, and spin up the frontend:
 ```bash
 cd apps/web
+cp .env.example .env.local
+
+# Install dependencies and run
 npm install
 npm run dev
 ```

@@ -8,6 +8,7 @@ import (
     "github.com/gc-platform/api/internal/cache"
     "github.com/gc-platform/api/internal/config"
     "github.com/gc-platform/api/internal/domain"
+    "github.com/gc-platform/api/internal/executor"
     "github.com/google/uuid"
 )
 
@@ -17,16 +18,16 @@ type RunService interface {
 }
 
 type runService struct {
-    cache cache.Cache
-    cfg   *config.Config
-    // In a real implementation we would also inject an Asynq client here:
-    // client *asynq.Client
+    cache  cache.Cache
+    cfg    *config.Config
+    judge0 executor.Judge0Client
 }
 
 func NewRunService(c cache.Cache, cfg *config.Config) RunService {
     return &runService{
-        cache: c,
-        cfg:   cfg,
+        cache:  c,
+        cfg:    cfg,
+        judge0: executor.NewJudge0Client(),
     }
 }
 
@@ -52,30 +53,73 @@ func (s *runService) EnqueueRun(ctx context.Context, req domain.RunRequest) (str
 }
 
 func (s *runService) SubscribeToRun(ctx context.Context, runID string) (<-chan domain.RunStreamEvent, error) {
-    // In a full implementation, this uses redis.Subscribe("run:stream:" + runID)
-    // Since our cache interface is basic, we will return a mock channel that emits 
-    // events after a delay to simulate Docker execution if Redis pubsub isn't implemented.
     ch := make(chan domain.RunStreamEvent)
 
     go func() {
         defer close(ch)
         
-        // Simulate queued state
-        ch <- domain.RunStreamEvent{RunID: runID, Status: string(domain.RunStatusQueued)}
-        time.Sleep(1 * time.Second)
-        
-        // Simulate running state
-        ch <- domain.RunStreamEvent{RunID: runID, Status: string(domain.RunStatusRunning)}
-        time.Sleep(500 * time.Millisecond)
-        
-        // Simulate execution output
-        ch <- domain.RunStreamEvent{RunID: runID, Status: string(domain.RunStatusRunning), Output: "Compiling..."}
-        time.Sleep(1 * time.Second)
-        ch <- domain.RunStreamEvent{RunID: runID, Status: string(domain.RunStatusRunning), Output: "Hello World\nExecution finished in 45ms"}
-        time.Sleep(500 * time.Millisecond)
+        // Fetch run payload from cache
+        payloadStr, err := s.cache.Get(ctx, "run:queue:"+runID)
+        if err != nil {
+            ch <- domain.RunStreamEvent{RunID: runID, Status: string(domain.RunStatusError), Output: "Run not found"}
+            return
+        }
 
-        // Simulate success
-        ch <- domain.RunStreamEvent{RunID: runID, Status: string(domain.RunStatusSuccess)}
+        var req domain.RunRequest
+        if err := json.Unmarshal([]byte(payloadStr), &req); err != nil {
+            ch <- domain.RunStreamEvent{RunID: runID, Status: string(domain.RunStatusError), Output: "Invalid run payload"}
+            return
+        }
+
+        ch <- domain.RunStreamEvent{RunID: runID, Status: string(domain.RunStatusQueued)}
+
+        // 1. Submit to Judge0
+        token, err := s.judge0.Submit(ctx, string(req.Language), req.Code, req.Input)
+        if err != nil {
+            ch <- domain.RunStreamEvent{RunID: runID, Status: string(domain.RunStatusError), Output: err.Error()}
+            return
+        }
+
+        ch <- domain.RunStreamEvent{RunID: runID, Status: string(domain.RunStatusRunning)}
+
+        // 2. Poll Judge0
+        for i := 0; i < 15; i++ { // Poll for max 15 seconds
+            time.Sleep(1 * time.Second)
+            
+            sub, err := s.judge0.PollStatus(ctx, token)
+            if err != nil {
+                continue
+            }
+
+            // Status 1 = In Queue, Status 2 = Processing
+            if sub.Status.ID == 1 || sub.Status.ID == 2 {
+                continue
+            }
+
+            // It has finished!
+            finalStatus := domain.RunStatusSuccess
+            output := sub.Stdout
+            
+            if sub.Status.ID > 3 {
+                finalStatus = domain.RunStatusError
+                output = sub.CompileOutput
+                if output == "" {
+                    output = sub.Stderr
+                }
+                if output == "" {
+                    output = sub.Status.Description
+                }
+            }
+
+            ch <- domain.RunStreamEvent{
+                RunID:  runID,
+                Status: string(finalStatus),
+                Output: output + "\n\nRuntime: " + sub.Time + "s",
+            }
+            return
+        }
+
+        ch <- domain.RunStreamEvent{RunID: runID, Status: string(domain.RunStatusTimeout), Output: "Execution Timed Out"}
     }()
 
     return ch, nil

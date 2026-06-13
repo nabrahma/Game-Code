@@ -70,6 +70,12 @@ type ProblemSummary struct {
     IsFavorite     *bool      `json:"is_favorite,omitempty"`
 }
 
+type ProblemFilter struct {
+    Difficulty *string
+    Status     *string
+    Search     *string
+}
+
 type Tag struct {
     ID       uuid.UUID `json:"id"`
     Name     string    `json:"name"`

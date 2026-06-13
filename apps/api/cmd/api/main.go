@@ -9,14 +9,13 @@ import (
 
     "github.com/labstack/echo/v4"
     "github.com/gc-platform/api/internal/config"
-    "github.com/gc-platform/api/internal/db/sqlc"
+    "github.com/gc-platform/api/internal/db"
     "github.com/gc-platform/api/internal/executor"
     "github.com/gc-platform/api/internal/handler"
     "github.com/gc-platform/api/internal/middleware"
     "github.com/gc-platform/api/internal/repository"
     "github.com/gc-platform/api/internal/service"
     "github.com/gc-platform/api/internal/cache"
-    "github.com/jackc/pgx/v5/pgxpool"
     "github.com/redis/go-redis/v9"
     "go.uber.org/zap"
 )
@@ -29,28 +28,26 @@ func main() {
     logger, _ := zap.NewProduction()
     defer logger.Sync()
 
-    // 3. Connect to PostgreSQL
-    pool, err := pgxpool.New(context.Background(), cfg.DatabaseURL)
+    // 3. Connect to PostgreSQL via GORM
+    gormDB, err := db.InitGORM(cfg)
     if err != nil {
         log.Fatal("cannot connect to db:", err)
     }
-    defer pool.Close()
 
     // 4. Connect to Redis
     rdb := redis.NewClient(&redis.Options{Addr: cfg.RedisAddr, Password: cfg.RedisPassword})
 
     // 5. Build dependency tree
-    queries   := sqlc.New(pool)
     cache     := cache.New(rdb)
 
-    userRepo  := repository.NewUserRepo(queries)
-    probRepo  := repository.NewProblemRepo(queries)
-    subRepo   := repository.NewSubmissionRepo(queries)
-    listRepo  := repository.NewListRepo(queries)
+    userRepo  := repository.NewUserRepo(gormDB)
+    probRepo  := repository.NewProblemRepo(gormDB)
+    subRepo   := repository.NewSubmissionRepo(gormDB)
+    listRepo  := repository.NewListRepo(gormDB)
 
     authSvc   := service.NewAuthService(userRepo, cache, cfg)
     probSvc   := service.NewProblemService(probRepo, cache)
-    subSvc    := service.NewSubmissionService(subRepo, probRepo, cache)
+    subSvc    := service.NewSubmissionService(subRepo, probRepo, userRepo, cache)
     runSvc    := service.NewRunService(cache, cfg)
     listSvc   := service.NewListService(listRepo)
     userSvc   := service.NewUserService(userRepo, subRepo)

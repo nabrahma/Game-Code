@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useProblem } from "@/lib/hooks/useProblems";
 import { useExecution } from "@/lib/hooks/useExecution";
+import { useSubmission } from "@/lib/hooks/useSubmission";
 import { ProblemDetailHeader } from "@/components/problems/solve/ProblemDetailHeader";
 import { ProblemDetailTabs } from "@/components/problems/solve/ProblemDetailTabs";
 import { ProblemDescription } from "@/components/problems/solve/ProblemDescription";
@@ -24,6 +25,7 @@ export default function ProblemSolvePage() {
   const [input, setInput] = useState("");
 
   const { executeCode, isExecuting, output, status, setOutput } = useExecution();
+  const { submit, isSubmitting, submission } = useSubmission();
 
   // Initialize starter code when problem loads or language changes
   useEffect(() => {
@@ -55,6 +57,11 @@ export default function ProblemSolvePage() {
   const handleRun = () => {
     if (!code) return;
     executeCode(problem.id, language, code, input);
+  };
+
+  const handleSubmit = () => {
+    if (!code) return;
+    submit({ problem_id: problem.id, language, code });
   };
 
   return (
@@ -99,8 +106,8 @@ export default function ProblemSolvePage() {
               language={language}
               setLanguage={setLanguage}
               onRun={handleRun}
-              onSubmit={() => alert("Submission Phase 5")}
-              isExecuting={isExecuting}
+              onSubmit={handleSubmit}
+              isExecuting={isExecuting || isSubmitting}
             />
             <div className="flex-1">
               <MonacoWrapper 
@@ -117,10 +124,11 @@ export default function ProblemSolvePage() {
 
           <Panel defaultSize={35} minSize={10} className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950">
             <ConsolePanel 
-              status={status}
+              status={isSubmitting ? (submission?.verdict || "submitting") : status}
               output={output}
               input={input}
               setInput={setInput}
+              submission={submission}
             />
           </Panel>
         </PanelGroup>

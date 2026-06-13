@@ -11,11 +11,11 @@ type Worker struct {
     cfg      *config.Config
     rdb      *redis.Client
     subRepo  repository.SubmissionRepo
-    probRepo repository.ProblemRepository
+    probRepo repository.ProblemRepo
     logger   *zap.Logger
 }
 
-func NewWorker(cfg *config.Config, rdb *redis.Client, subRepo repository.SubmissionRepo, probRepo repository.ProblemRepository, logger *zap.Logger) *Worker {
+func NewWorker(cfg *config.Config, rdb *redis.Client, subRepo repository.SubmissionRepo, probRepo repository.ProblemRepo, logger *zap.Logger) *Worker {
     return &Worker{
         cfg:      cfg,
         rdb:      rdb,

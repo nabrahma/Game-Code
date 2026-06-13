@@ -5,8 +5,9 @@ import (
     "strconv"
 
     "github.com/labstack/echo/v4"
-    "github.com/gc-platform/api/internal/repository"
+    "github.com/gc-platform/api/internal/domain"
     "github.com/gc-platform/api/internal/service"
+    "github.com/gc-platform/api/pkg/pagination"
 )
 
 type ProblemHandler struct {
@@ -19,11 +20,7 @@ func NewProblemHandler(probSvc service.ProblemService, userSvc service.UserServi
 }
 
 func (h *ProblemHandler) List(c echo.Context) error {
-    filter := repository.ProblemFilter{
-        Sort:   c.QueryParam("sort"),
-        Limit:  10,
-        Offset: 0,
-    }
+    filter := domain.ProblemFilter{}
     
     if diff := c.QueryParam("difficulty"); diff != "" {
         filter.Difficulty = &diff
@@ -31,26 +28,29 @@ func (h *ProblemHandler) List(c echo.Context) error {
     if search := c.QueryParam("q"); search != "" {
         filter.Search = &search
     }
-    if limitStr := c.QueryParam("limit"); limitStr != "" {
-        if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 100 {
-            filter.Limit = int32(l)
+
+    params := pagination.Params{
+        Page: 1,
+        Size: 10,
+    }
+
+    if pageStr := c.QueryParam("page"); pageStr != "" {
+        if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+            params.Page = p
         }
     }
-    if offsetStr := c.QueryParam("offset"); offsetStr != "" {
-        if o, err := strconv.Atoi(offsetStr); err == nil && o >= 0 {
-            filter.Offset = int32(o)
+    if sizeStr := c.QueryParam("limit"); sizeStr != "" {
+        if s, err := strconv.Atoi(sizeStr); err == nil && s > 0 && s <= 100 {
+            params.Size = s
         }
     }
 
-    problems, total, err := h.probSvc.ListProblems(c.Request().Context(), filter)
+    pageResult, err := h.probSvc.GetProblems(c.Request().Context(), filter, params)
     if err != nil {
         return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
     }
 
-    return c.JSON(http.StatusOK, map[string]interface{}{
-        "problems": problems,
-        "total":    total,
-    })
+    return c.JSON(http.StatusOK, pageResult)
 }
 
 func (h *ProblemHandler) GetBySlug(c echo.Context) error {
@@ -73,8 +73,5 @@ func (h *ProblemHandler) ToggleFavorite(c echo.Context) error {
         return echo.NewHTTPError(http.StatusBadRequest, "slug is required")
     }
     
-    // In a real implementation we would extract UserID from context and call:
-    // h.userSvc.ToggleFavorite(userID, slug)
-    // For now we assume optimistic success
     return c.NoContent(http.StatusOK)
 }

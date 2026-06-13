@@ -18,29 +18,37 @@ const (
 )
 
 type Submission struct {
-    ID               uuid.UUID         `json:"id"`
-    UserID           uuid.UUID         `json:"user_id"`
-    ProblemID        uuid.UUID         `json:"problem_id"`
-    ProblemSlug      string            `json:"problem_slug"`
-    ProblemTitle     string            `json:"problem_title"`
-    Language         Language          `json:"language"`
-    Code             string            `json:"code"`
-    Verdict          SubmissionVerdict `json:"verdict"`
+    ID               uuid.UUID         `json:"id" gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+    UserID           uuid.UUID         `json:"user_id" gorm:"type:uuid;not null"`
+    ProblemID        uuid.UUID         `json:"problem_id" gorm:"type:uuid;not null"`
+    Language         Language          `json:"language" gorm:"type:language;not null"`
+    Code             string            `json:"code" gorm:"not null"`
+    Verdict          SubmissionVerdict `json:"verdict" gorm:"type:submission_verdict;default:'pending';not null"`
     RuntimeMs        *int32            `json:"runtime_ms,omitempty"`
     MemoryKb         *int32            `json:"memory_kb,omitempty"`
     ErrorMessage     *string           `json:"error_message,omitempty"`
     PassedTestCount  *int32            `json:"passed_test_count,omitempty"`
     TotalTestCount   *int32            `json:"total_test_count,omitempty"`
-    Results          []TestResult      `json:"results,omitempty"`
-    CreatedAt        time.Time         `json:"created_at"`
+    Results          []TestResult      `json:"results,omitempty" gorm:"foreignKey:SubmissionID"`
+    CreatedAt        time.Time         `json:"created_at" gorm:"default:now();not null"`
+    UpdatedAt        time.Time         `json:"updated_at" gorm:"default:now();not null"`
+}
+
+func (Submission) TableName() string {
+    return "submissions"
 }
 
 type TestResult struct {
-    ID         uuid.UUID `json:"id"`
-    Input      string    `json:"input"`
-    Expected   string    `json:"expected"`
-    Actual     string    `json:"actual"`
-    Passed     bool      `json:"passed"`
-    RuntimeMs  *int32    `json:"runtime_ms,omitempty"`
-    MemoryKb   *int32    `json:"memory_kb,omitempty"`
+    ID           uuid.UUID `json:"id" gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+    SubmissionID uuid.UUID `json:"submission_id" gorm:"type:uuid;not null"`
+    Input        string    `json:"input" gorm:"not null"`
+    Expected     string    `json:"expected" gorm:"not null"`
+    Actual       string    `json:"actual" gorm:"not null;default:''"`
+    Passed       bool      `json:"passed" gorm:"not null;default:false"`
+    RuntimeMs    *int32    `json:"runtime_ms,omitempty"`
+    MemoryKb     *int32    `json:"memory_kb,omitempty"`
+}
+
+func (TestResult) TableName() string {
+    return "submission_test_results"
 }

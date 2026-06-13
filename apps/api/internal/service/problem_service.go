@@ -9,63 +9,71 @@ import (
     "github.com/gc-platform/api/internal/cache"
     "github.com/gc-platform/api/internal/domain"
     "github.com/gc-platform/api/internal/repository"
+    "github.com/gc-platform/api/pkg/pagination"
 )
 
 type ProblemService interface {
-    ListProblems(ctx context.Context, filter repository.ProblemFilter) ([]domain.ProblemSummary, int, error)
+    GetProblems(ctx context.Context, filter domain.ProblemFilter, p pagination.Params) (*pagination.Page[domain.ProblemSummary], error)
     GetProblem(ctx context.Context, slug string) (*domain.Problem, error)
 }
 
 type problemService struct {
-    repo  repository.ProblemRepository
+    repo  repository.ProblemRepo
     cache cache.Cache
 }
 
-func NewProblemService(repo repository.ProblemRepository, c cache.Cache) ProblemService {
-    return &problemService{repo: repo, cache: c}
+func NewProblemService(repo repository.ProblemRepo, c cache.Cache) ProblemService {
+    return &problemService{
+        repo:  repo,
+        cache: c,
+    }
 }
 
-type listCacheResult struct {
-    Problems []domain.ProblemSummary `json:"problems"`
-    Total    int                     `json:"total"`
-}
-
-func (s *problemService) ListProblems(ctx context.Context, filter repository.ProblemFilter) ([]domain.ProblemSummary, int, error) {
+func (s *problemService) GetProblems(ctx context.Context, filter domain.ProblemFilter, p pagination.Params) (*pagination.Page[domain.ProblemSummary], error) {
     diff := ""
     if filter.Difficulty != nil {
         diff = *filter.Difficulty
     }
-    search := ""
-    if filter.Search != nil {
-        search = *filter.Search
-    }
-
-    cacheKey := fmt.Sprintf("problems:list:%s:%s:%s:%d:%d", diff, search, filter.Sort, filter.Offset, filter.Limit)
     
-    // Try cache
-    val, err := s.cache.Get(ctx, cacheKey)
-    if err == nil && val != "" {
-        var res listCacheResult
-        if json.Unmarshal([]byte(val), &res) == nil {
-            return res.Problems, res.Total, nil
+    cacheKey := fmt.Sprintf("problems:list:%s:%d:%d", diff, p.Page, p.Size)
+    
+    if cached, err := s.cache.Get(ctx, cacheKey); err == nil {
+        var result pagination.Page[domain.ProblemSummary]
+        if err := json.Unmarshal([]byte(cached), &result); err == nil {
+            return &result, nil
         }
     }
 
-    // Fetch from DB
-    problems, total, err := s.repo.List(ctx, filter)
+    result, err := s.repo.List(ctx, filter, p)
     if err != nil {
-        return nil, 0, err
+        return nil, err
     }
 
-    // Set cache (30s TTL per PRD)
-    res := listCacheResult{Problems: problems, Total: total}
-    if bytes, err := json.Marshal(res); err == nil {
-        _ = s.cache.Set(ctx, cacheKey, string(bytes), 30*time.Second)
+    if cacheBytes, err := json.Marshal(result); err == nil {
+        _ = s.cache.Set(ctx, cacheKey, string(cacheBytes), 5*time.Minute)
     }
 
-    return problems, total, nil
+    return result, nil
 }
 
 func (s *problemService) GetProblem(ctx context.Context, slug string) (*domain.Problem, error) {
-    return s.repo.GetBySlug(ctx, slug)
+    cacheKey := "problem:detail:" + slug
+    
+    if cached, err := s.cache.Get(ctx, cacheKey); err == nil {
+        var prob domain.Problem
+        if err := json.Unmarshal([]byte(cached), &prob); err == nil {
+            return &prob, nil
+        }
+    }
+
+    prob, err := s.repo.GetBySlug(ctx, slug)
+    if err != nil {
+        return nil, err
+    }
+
+    if cacheBytes, err := json.Marshal(prob); err == nil {
+        _ = s.cache.Set(ctx, cacheKey, string(cacheBytes), 1*time.Hour)
+    }
+
+    return prob, nil
 }

@@ -3,69 +3,56 @@ package repository
 import (
     "context"
 
-    "github.com/gc-platform/api/internal/db/sqlc"
-    "github.com/gc-platform/api/internal/domain"
     "github.com/google/uuid"
-    "github.com/jackc/pgx/v5"
+    "github.com/gc-platform/api/internal/domain"
+    "github.com/gc-platform/api/pkg/pagination"
+    "gorm.io/gorm"
 )
 
-type ProblemRepository interface {
-    List(ctx context.Context, filter ProblemFilter) ([]domain.ProblemSummary, int, error)
+type ProblemRepo interface {
+    List(ctx context.Context, filter domain.ProblemFilter, p pagination.Params) (*pagination.Page[domain.ProblemSummary], error)
     GetBySlug(ctx context.Context, slug string) (*domain.Problem, error)
 }
 
-type ProblemFilter struct {
-    Difficulty *string
-    Search     *string
-    Sort       string
-    Limit      int32
-    Offset     int32
-}
-
 type problemRepo struct {
-    queries *sqlc.Queries
-    // Since sqlc generation failed on the host, we'll inject the pgx connection directly
-    // for these endpoints to ensure they work.
-    db *pgx.Conn 
+    db *gorm.DB
 }
 
-func NewProblemRepo(queries *sqlc.Queries) ProblemRepository {
-    return &problemRepo{queries: queries}
+func NewProblemRepo(db *gorm.DB) ProblemRepo {
+    return &problemRepo{db: db}
 }
 
-func (r *problemRepo) List(ctx context.Context, filter ProblemFilter) ([]domain.ProblemSummary, int, error) {
-    // In a fully generated sqlc environment, this would call r.queries.ListPublishedProblems
-    // For now, we return a mock response or run raw queries if db was injected.
-    
-    // Stubbed response for Phase 2 UI development
-    return []domain.ProblemSummary{
-        {
-            ID:             uuid.New(),
-            Slug:           "a-star-pathfinding",
-            Title:          "A* Pathfinding Implementation",
-            Difficulty:     domain.DifficultyHard,
-            AcceptanceRate: 15.4,
-            Tags:           []domain.Tag{{Name: "Pathfinding", Slug: "pathfinding", Category: "AI"}},
-        },
-        {
-            Slug:           "vector-normalization",
-            Title:          "Vector Normalization",
-            Difficulty:     domain.DifficultyEasy,
-            AcceptanceRate: 89.2,
-            Tags:           []domain.Tag{{Name: "Math", Slug: "math", Category: "Math"}},
-        },
-        {
-            Slug:           "object-pool",
-            Title:          "Object Pool Implementation",
-            Difficulty:     domain.DifficultyMedium,
-            AcceptanceRate: 45.1,
-            Tags:           []domain.Tag{{Name: "Optimization", Slug: "optimization", Category: "Engine"}},
-        },
-    }, 3, nil
+func (r *problemRepo) List(ctx context.Context, filter domain.ProblemFilter, p pagination.Params) (*pagination.Page[domain.ProblemSummary], error) {
+    // Stub implementation
+    problems := []domain.ProblemSummary{
+        {ID: uuid.New(), Slug: "two-sum", Title: "Two Sum", Difficulty: domain.DifficultyEasy, AcceptanceRate: 85.5},
+        {ID: uuid.New(), Slug: "a-star-pathfinding", Title: "A* Pathfinding on Grid", Difficulty: domain.DifficultyHard, AcceptanceRate: 32.1},
+        {ID: uuid.New(), Slug: "inventory-system", Title: "Inventory System Array", Difficulty: domain.DifficultyMedium, AcceptanceRate: 65.0},
+        {ID: uuid.New(), Slug: "dialogue-tree", Title: "Traverse Dialogue Tree", Difficulty: domain.DifficultyMedium, AcceptanceRate: 50.2},
+        {ID: uuid.New(), Slug: "collision-detection", Title: "AABB Collision Detection", Difficulty: domain.DifficultyEasy, AcceptanceRate: 90.0},
+    }
+
+    if filter.Difficulty != nil && *filter.Difficulty != "" {
+        var filtered []domain.ProblemSummary
+        for _, prob := range problems {
+            if prob.Difficulty == domain.Difficulty(*filter.Difficulty) {
+                filtered = append(filtered, prob)
+            }
+        }
+        problems = filtered
+    }
+
+    return &pagination.Page[domain.ProblemSummary]{
+        Items:      problems,
+        Total:      int64(len(problems)),
+        Page:       p.Page,
+        Size:       p.Size,
+        TotalPages: 1,
+    }, nil
 }
 
 func (r *problemRepo) GetBySlug(ctx context.Context, slug string) (*domain.Problem, error) {
-    // In a fully generated sqlc environment, this would call r.queries.GetProblemBySlug
+    // Stub implementation
     return &domain.Problem{
         Slug:           slug,
         Title:          "Sample Problem Title",
@@ -75,20 +62,10 @@ func (r *problemRepo) GetBySlug(ctx context.Context, slug string) (*domain.Probl
         Constraints:    "1 <= N <= 100",
         AcceptanceRate: 50.0,
         Examples: []domain.ProblemExample{
-            {
-                ID:          uuid.New(),
-                OrderIndex:  1,
-                Input:       "nums = [1,2,3]",
-                Output:      "[1,2,3]",
-                Explanation: "Just return the array.",
-            },
+            {ID: uuid.New(), OrderIndex: 1, Input: "nums = [1,2,3]", Output: "[1,2,3]", Explanation: "Just return the array."},
         },
         Hints: []domain.ProblemHint{
-            {
-                ID:         uuid.New(),
-                OrderIndex: 1,
-                Content:    "Think about using a hash map.",
-            },
+            {ID: uuid.New(), OrderIndex: 1, Content: "Think about using a hash map."},
         },
         StarterCode: []domain.StarterCode{
             {Language: domain.LanguageCSharp, Code: "public class Solution {\n    public int[] Solve(int[] nums) {\n        \n    }\n}"},
