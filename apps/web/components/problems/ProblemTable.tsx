@@ -2,6 +2,8 @@ import React from "react";
 import Link from "next/link";
 import { ProblemSummary } from "@/lib/hooks/useProblems";
 import { DifficultyBadge } from "../ui/DifficultyBadge";
+import { TableSkeleton } from "../ui/Skeleton";
+import { EmptyState } from "../ui/EmptyState";
 
 interface ProblemTableProps {
   problems: ProblemSummary[];
@@ -10,19 +12,11 @@ interface ProblemTableProps {
 
 export function ProblemTable({ problems, isLoading }: ProblemTableProps) {
   if (isLoading) {
-    return (
-      <div className="flex justify-center p-8 text-zinc-500">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
-      </div>
-    );
+    return <TableSkeleton rows={10} />;
   }
 
   if (problems.length === 0) {
-    return (
-      <div className="flex justify-center p-8 text-zinc-500">
-        No problems found matching your criteria.
-      </div>
-    );
+    return <EmptyState />;
   }
 
   return (

@@ -20,6 +20,7 @@ type Config struct {
     MaxWorkers        int    // asynq worker concurrency, default 4
     DockerRunnerTag   string // e.g. "latest"
     Environment       string // "development" | "production"
+    SentryDSN         string
 }
 
 func Load() *Config {
@@ -33,6 +34,7 @@ func Load() *Config {
     viper.SetDefault("MAX_WORKERS", 4)
     viper.SetDefault("DOCKER_RUNNER_TAG", "latest")
     viper.SetDefault("ENVIRONMENT", "development")
+    viper.SetDefault("SENTRY_DSN", "")
 
     return &Config{
         Port:               viper.GetString("PORT"),
@@ -52,5 +54,6 @@ func Load() *Config {
         MaxWorkers:         viper.GetInt("MAX_WORKERS"),
         DockerRunnerTag:    viper.GetString("DOCKER_RUNNER_TAG"),
         Environment:        viper.GetString("ENVIRONMENT"),
+        SentryDSN:          viper.GetString("SENTRY_DSN"),
     }
 }

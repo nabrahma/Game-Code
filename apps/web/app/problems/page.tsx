@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useProblems } from "@/lib/hooks/useProblems";
 import { ProblemFiltersBar } from "@/components/problems/ProblemFiltersBar";
 import { ProblemTable } from "@/components/problems/ProblemTable";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 function ProblemListContent() {
   const router = useRouter();
@@ -61,9 +62,7 @@ function ProblemListContent() {
       />
 
       {error ? (
-        <div className="rounded-md bg-red-500/10 p-4 text-red-500">
-          Failed to load problems. Please try again later.
-        </div>
+        <ErrorState message="Failed to load problems. Please try again later." />
       ) : (
         <ProblemTable problems={data?.problems || []} isLoading={isLoading} />
       )}

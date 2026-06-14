@@ -3,6 +3,7 @@ import { MessageSquare, ArrowUp, Plus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { DiscussPostForm } from './DiscussPostForm';
 import { DiscussPostDetail } from './DiscussPostDetail';
+import { EmptyState } from '../ui/EmptyState';
 
 interface Post {
   id: string;
@@ -76,11 +77,11 @@ export function DiscussFeed({ slug }: { slug: string }) {
       {loading ? (
         <div className="text-zinc-500 text-center py-8">Loading discussions...</div>
       ) : posts.length === 0 ? (
-        <div className="text-center py-12 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/30">
-          <MessageSquare className="w-8 h-8 text-zinc-600 mx-auto mb-3" />
-          <h3 className="text-zinc-300 font-medium mb-1">No discussions yet</h3>
-          <p className="text-zinc-500 text-sm">Be the first to start a conversation about this problem.</p>
-        </div>
+        <EmptyState 
+          title="No discussions yet" 
+          message="Be the first to start a conversation about this problem." 
+          icon={<MessageSquare className="w-12 h-12 text-zinc-600 mb-4" />}
+        />
       ) : (
         <div className="space-y-4">
           {posts.map(post => (

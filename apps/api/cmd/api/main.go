@@ -6,8 +6,10 @@ import (
     "os"
     "os/signal"
     "syscall"
+    "time"
 
     "github.com/labstack/echo/v4"
+    "github.com/getsentry/sentry-go"
     "github.com/gc-platform/api/internal/config"
     "github.com/gc-platform/api/internal/db"
     "github.com/gc-platform/api/internal/handler"
@@ -26,6 +28,21 @@ func main() {
     // 2. Init logger
     logger, _ := zap.NewProduction()
     defer logger.Sync()
+
+    // Initialize Sentry
+    if cfg.SentryDSN != "" {
+        err := sentry.Init(sentry.ClientOptions{
+            Dsn:              cfg.SentryDSN,
+            Environment:      cfg.Environment,
+            TracesSampleRate: 1.0,
+        })
+        if err != nil {
+            logger.Error("Sentry initialization failed", zap.Error(err))
+        } else {
+            logger.Info("Sentry initialized")
+            defer sentry.Flush(2 * time.Second)
+        }
+    }
 
     // 3. Connect to PostgreSQL via GORM
     gormDB, err := db.InitGORM(cfg)
@@ -49,7 +66,7 @@ func main() {
     probSvc   := service.NewProblemService(probRepo, cache)
     subSvc    := service.NewSubmissionService(subRepo, probRepo, userRepo, cache)
     runSvc    := service.NewRunService(cache, cfg)
-    listSvc   := service.NewListService(listRepo)
+    listSvc   := service.NewListService(listRepo, cache)
     discussSvc := service.NewDiscussService(discussRepo, probRepo)
     userSvc   := service.NewUserService(userRepo, subRepo)
 
@@ -59,6 +76,9 @@ func main() {
     e.HideBanner = true
 
     // 8. Register middleware
+    if cfg.SentryDSN != "" {
+        e.Use(middleware.SentryMiddleware())
+    }
     middleware.Register(e, cfg, rdb, logger)
 
     // 9. Register routes

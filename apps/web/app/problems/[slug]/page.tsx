@@ -99,12 +99,12 @@ export default function ProblemSolvePage() {
         </div>
       </Panel>
 
-      <PanelResizeHandle className="w-2 transition-colors hover:bg-indigo-500/50 flex flex-col justify-center items-center cursor-col-resize group">
+      <PanelResizeHandle className="w-2 transition-colors hover:bg-indigo-500/50 hidden md:flex flex-col justify-center items-center cursor-col-resize group">
         <div className="h-8 w-1 rounded bg-zinc-700 group-hover:bg-indigo-400" />
       </PanelResizeHandle>
 
       {/* Right Panels: Editor & Console */}
-      <Panel defaultSize={60} minSize={30}>
+      <Panel defaultSize={60} minSize={30} className="hidden md:block">
         <PanelGroup direction="vertical">
           <Panel defaultSize={65} minSize={20} className="flex flex-col overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950">
             <EditorHeader 

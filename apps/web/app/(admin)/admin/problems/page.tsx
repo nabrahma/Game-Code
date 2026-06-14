@@ -3,6 +3,9 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Edit2, Trash2 } from "lucide-react";
+import { TableSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 interface ProblemSummary {
   id: string;
@@ -15,20 +18,23 @@ interface ProblemSummary {
 export default function AdminProblemsPage() {
   const [problems, setProblems] = useState<ProblemSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProblems();
   }, []);
 
   const fetchProblems = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("http://localhost:8080/api/problems");
-      if (res.ok) {
-        const data = await res.json();
-        setProblems(data.items || []);
-      }
-    } catch (err) {
+      if (!res.ok) throw new Error("Failed to load problems");
+      const data = await res.json();
+      setProblems(data.items || []);
+    } catch (err: any) {
       console.error("Failed to fetch problems", err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -64,31 +70,36 @@ export default function AdminProblemsPage() {
         </Link>
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
-        <table className="w-full text-left text-sm text-zinc-400">
-          <thead className="bg-zinc-950 border-b border-zinc-800 text-zinc-300 uppercase font-medium text-xs">
-            <tr>
-              <th className="px-6 py-4">Title</th>
-              <th className="px-6 py-4">Difficulty</th>
-              <th className="px-6 py-4">Acceptance</th>
-              <th className="px-6 py-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-800/50">
-            {loading ? (
+      {loading ? (
+        <TableSkeleton />
+      ) : error ? (
+        <ErrorState message={error} onRetry={fetchProblems} />
+      ) : problems.length === 0 ? (
+        <EmptyState 
+          title="No problems found" 
+          message="Click 'Create Problem' to add your first coding challenge." 
+          action={
+            <Link 
+              href="/admin/problems/new"
+              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Create Problem
+            </Link>
+          }
+        />
+      ) : (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
+          <table className="w-full text-left text-sm text-zinc-400">
+            <thead className="bg-zinc-950 border-b border-zinc-800 text-zinc-300 uppercase font-medium text-xs">
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-zinc-500">
-                  Loading problems...
-                </td>
+                <th className="px-6 py-4">Title</th>
+                <th className="px-6 py-4">Difficulty</th>
+                <th className="px-6 py-4">Acceptance</th>
+                <th className="px-6 py-4 text-right">Actions</th>
               </tr>
-            ) : problems.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-zinc-500">
-                  No problems found. Click "Create Problem" to add one.
-                </td>
-              </tr>
-            ) : (
-              problems.map((p) => (
+            </thead>
+            <tbody className="divide-y divide-zinc-800/50">
+              {problems.map((p) => (
                 <tr key={p.id} className="hover:bg-zinc-800/30 transition-colors">
                   <td className="px-6 py-4 font-medium text-zinc-200">
                     {p.title}
@@ -121,11 +132,11 @@ export default function AdminProblemsPage() {
                     </button>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
