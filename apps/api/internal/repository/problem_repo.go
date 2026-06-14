@@ -7,12 +7,22 @@ import (
     "github.com/gc-platform/api/internal/domain"
     "github.com/gc-platform/api/pkg/pagination"
     "gorm.io/gorm"
+    "gorm.io/gorm/clause"
 )
 
 type ProblemRepo interface {
     List(ctx context.Context, filter domain.ProblemFilter, p pagination.Params) (*pagination.Page[domain.ProblemSummary], error)
     GetBySlug(ctx context.Context, slug string) (*domain.Problem, error)
     ToggleFavorite(ctx context.Context, userID uuid.UUID, problemID uuid.UUID) (bool, error)
+    
+    // Admin CMS methods
+    CreateProblem(ctx context.Context, p *domain.Problem) error
+    UpdateProblem(ctx context.Context, slug string, updates map[string]interface{}) error
+    DeleteProblem(ctx context.Context, id uuid.UUID) error
+    UpsertTestCase(ctx context.Context, tc *domain.TestCase) error
+    DeleteTestCase(ctx context.Context, id uuid.UUID) error
+    UpsertStarterCode(ctx context.Context, sc *domain.StarterCode) error
+    UpsertEditorial(ctx context.Context, e *domain.Editorial) error
 }
 
 type problemRepo struct {
@@ -96,3 +106,52 @@ func (r *problemRepo) ToggleFavorite(ctx context.Context, userID uuid.UUID, prob
         return true, err
     }
 }
+
+// Admin CMS Methods
+
+func (r *problemRepo) CreateProblem(ctx context.Context, p *domain.Problem) error {
+    return r.db.WithContext(ctx).Create(p).Error
+}
+
+func (r *problemRepo) UpdateProblem(ctx context.Context, slug string, updates map[string]interface{}) error {
+    return r.db.WithContext(ctx).Model(&domain.Problem{}).Where("slug = ?", slug).Updates(updates).Error
+}
+
+func (r *problemRepo) DeleteProblem(ctx context.Context, id uuid.UUID) error {
+    return r.db.WithContext(ctx).Delete(&domain.Problem{}, id).Error
+}
+
+func (r *problemRepo) UpsertTestCase(ctx context.Context, tc *domain.TestCase) error {
+    if tc.ID == uuid.Nil {
+        tc.ID = uuid.New()
+        return r.db.WithContext(ctx).Table("test_cases").Create(tc).Error
+    }
+    return r.db.WithContext(ctx).Table("test_cases").Save(tc).Error
+}
+
+func (r *problemRepo) DeleteTestCase(ctx context.Context, id uuid.UUID) error {
+    return r.db.WithContext(ctx).Table("test_cases").Where("id = ?", id).Delete(nil).Error
+}
+
+func (r *problemRepo) UpsertStarterCode(ctx context.Context, sc *domain.StarterCode) error {
+    if sc.ID == uuid.Nil {
+        sc.ID = uuid.New()
+    }
+    return r.db.WithContext(ctx).Table("starter_code").
+        Clauses(clause.OnConflict{
+            Columns:   []clause.Column{{Name: "problem_id"}, {Name: "language"}},
+            DoUpdates: clause.AssignmentColumns([]string{"code"}),
+        }).Create(sc).Error
+}
+
+func (r *problemRepo) UpsertEditorial(ctx context.Context, e *domain.Editorial) error {
+    if e.ID == uuid.Nil {
+        e.ID = uuid.New()
+    }
+    return r.db.WithContext(ctx).Table("editorials").
+        Clauses(clause.OnConflict{
+            Columns:   []clause.Column{{Name: "problem_id"}},
+            DoUpdates: clause.AssignmentColumns([]string{"content", "time_complexity", "space_complexity", "unity_variant", "unreal_variant", "godot_variant", "updated_at"}),
+        }).Create(e).Error
+}
+

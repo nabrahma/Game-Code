@@ -98,7 +98,8 @@ type ProblemHint struct {
 }
 
 type TestCase struct {
-    ID          uuid.UUID `json:"id"`
+    ID          uuid.UUID `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+    ProblemID   uuid.UUID `json:"problem_id"`
     Input       string    `json:"input"`
     Output      string    `json:"output"`
     IsHidden    bool      `json:"is_hidden"`
@@ -108,12 +109,15 @@ type TestCase struct {
 }
 
 type StarterCode struct {
-    Language Language `json:"language"`
-    Code     string   `json:"code"`
+    ID        uuid.UUID `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+    ProblemID uuid.UUID `json:"problem_id"`
+    Language  Language  `json:"language"`
+    Code      string    `json:"code"`
 }
 
 type Editorial struct {
-    ID               uuid.UUID `json:"id"`
+    ID               uuid.UUID `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+    ProblemID        uuid.UUID `json:"problem_id"`
     Content          string    `json:"content"`
     TimeComplexity   string    `json:"time_complexity,omitempty"`
     SpaceComplexity  string    `json:"space_complexity,omitempty"`

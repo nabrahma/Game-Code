@@ -65,6 +65,19 @@ func RegisterRoutes(e *echo.Echo, d *Deps) {
     api.POST("/discuss/:id/upvote", discussHandler.TogglePostUpvote)
     api.POST("/discuss/comments/:commentId/upvote", discussHandler.ToggleCommentUpvote)
 
+    // Admin routes
+    adminHandler := NewAdminHandler(d.Prob)
+    admin := api.Group("/admin")
+    admin.POST("/problems", adminHandler.CreateProblem)
+    admin.PUT("/problems/:slug", adminHandler.UpdateProblem)
+    admin.DELETE("/problems/:id", adminHandler.DeleteProblem)
+    
+    admin.POST("/testcases", adminHandler.UpsertTestCase)
+    admin.DELETE("/testcases/:id", adminHandler.DeleteTestCase)
+    
+    admin.POST("/startercode", adminHandler.UpsertStarterCode)
+    admin.POST("/editorials", adminHandler.UpsertEditorial)
+
     // Auth (stubs for Phase 1)
     // authHandler := NewAuthHandler(d.Auth)
     // api.POST("/auth/logout", authHandler.Logout)

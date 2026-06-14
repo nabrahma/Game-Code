@@ -17,6 +17,15 @@ type ProblemService interface {
     GetProblems(ctx context.Context, filter domain.ProblemFilter, p pagination.Params) (*pagination.Page[domain.ProblemSummary], error)
     GetProblem(ctx context.Context, slug string) (*domain.Problem, error)
     ToggleFavorite(ctx context.Context, userID uuid.UUID, problemID uuid.UUID) (bool, error)
+
+    // Admin CMS methods
+    CreateProblem(ctx context.Context, p *domain.Problem) error
+    UpdateProblem(ctx context.Context, slug string, updates map[string]interface{}) error
+    DeleteProblem(ctx context.Context, id uuid.UUID) error
+    UpsertTestCase(ctx context.Context, tc *domain.TestCase) error
+    DeleteTestCase(ctx context.Context, id uuid.UUID) error
+    UpsertStarterCode(ctx context.Context, sc *domain.StarterCode) error
+    UpsertEditorial(ctx context.Context, e *domain.Editorial) error
 }
 
 type problemService struct {
@@ -82,4 +91,34 @@ func (s *problemService) GetProblem(ctx context.Context, slug string) (*domain.P
 
 func (s *problemService) ToggleFavorite(ctx context.Context, userID uuid.UUID, problemID uuid.UUID) (bool, error) {
     return s.repo.ToggleFavorite(ctx, userID, problemID)
+}
+
+// Admin CMS Methods
+
+func (s *problemService) CreateProblem(ctx context.Context, p *domain.Problem) error {
+    return s.repo.CreateProblem(ctx, p)
+}
+
+func (s *problemService) UpdateProblem(ctx context.Context, slug string, updates map[string]interface{}) error {
+    return s.repo.UpdateProblem(ctx, slug, updates)
+}
+
+func (s *problemService) DeleteProblem(ctx context.Context, id uuid.UUID) error {
+    return s.repo.DeleteProblem(ctx, id)
+}
+
+func (s *problemService) UpsertTestCase(ctx context.Context, tc *domain.TestCase) error {
+    return s.repo.UpsertTestCase(ctx, tc)
+}
+
+func (s *problemService) DeleteTestCase(ctx context.Context, id uuid.UUID) error {
+    return s.repo.DeleteTestCase(ctx, id)
+}
+
+func (s *problemService) UpsertStarterCode(ctx context.Context, sc *domain.StarterCode) error {
+    return s.repo.UpsertStarterCode(ctx, sc)
+}
+
+func (s *problemService) UpsertEditorial(ctx context.Context, e *domain.Editorial) error {
+    return s.repo.UpsertEditorial(ctx, e)
 }
