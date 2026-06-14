@@ -1,8 +1,8 @@
 import React from "react";
 import clsx from "clsx";
-import { FileText, History, Lightbulb } from "lucide-react";
+import { FileText, History, Lightbulb, MessageCircle } from "lucide-react";
 
-type Tab = "description" | "submissions" | "editorial";
+type Tab = "description" | "submissions" | "editorial" | "discuss";
 
 interface ProblemDetailTabsProps {
   activeTab: Tab;
@@ -13,6 +13,7 @@ export function ProblemDetailTabs({ activeTab, setActiveTab }: ProblemDetailTabs
   const tabs = [
     { id: "description" as Tab, label: "Description", icon: FileText },
     { id: "submissions" as Tab, label: "Submissions", icon: History },
+    { id: "discuss" as Tab, label: "Discuss", icon: MessageCircle },
     { id: "editorial" as Tab, label: "Editorial", icon: Lightbulb },
   ];
 

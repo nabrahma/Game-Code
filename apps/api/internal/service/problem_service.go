@@ -6,6 +6,7 @@ import (
     "fmt"
     "time"
 
+    "github.com/google/uuid"
     "github.com/gc-platform/api/internal/cache"
     "github.com/gc-platform/api/internal/domain"
     "github.com/gc-platform/api/internal/repository"

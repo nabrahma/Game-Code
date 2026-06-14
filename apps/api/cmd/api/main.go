@@ -43,12 +43,14 @@ func main() {
     probRepo  := repository.NewProblemRepo(gormDB)
     subRepo   := repository.NewSubmissionRepo(gormDB)
     listRepo  := repository.NewListRepo(gormDB)
+    discussRepo := repository.NewDiscussRepo(gormDB)
 
     authSvc   := service.NewAuthService(userRepo, cache, cfg)
     probSvc   := service.NewProblemService(probRepo, cache)
     subSvc    := service.NewSubmissionService(subRepo, probRepo, userRepo, cache)
     runSvc    := service.NewRunService(cache, cfg)
     listSvc   := service.NewListService(listRepo)
+    discussSvc := service.NewDiscussService(discussRepo, probRepo)
     userSvc   := service.NewUserService(userRepo, subRepo)
 
 
@@ -65,8 +67,9 @@ func main() {
         Prob:   probSvc,
         Sub:    subSvc,
         Run:    runSvc,
-        List:   listSvc,
-        User:   userSvc,
+        List:    listSvc,
+        Discuss: discussSvc,
+        User:    userSvc,
         Logger: logger,
         Config: cfg,
     })

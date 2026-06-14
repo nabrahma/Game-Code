@@ -7,16 +7,12 @@ import (
 )
 
 type AuthService interface{}
-type ListService interface{}
 type UserService interface{}
 
 func NewAuthService(u repository.UserRepo, c cache.Cache, cfg *config.Config) AuthService {
     return nil
 }
 
-func NewListService(l repository.ListRepo) ListService {
-    return nil
-}
 
 func NewUserService(u repository.UserRepo, s repository.SubmissionRepo) UserService {
     return nil

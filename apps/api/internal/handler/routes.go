@@ -1,6 +1,8 @@
 package handler
 
 import (
+    "net/http"
+
     "github.com/labstack/echo/v4"
     "github.com/gc-platform/api/internal/config"
     "github.com/gc-platform/api/internal/service"
@@ -8,17 +10,23 @@ import (
 )
 
 type Deps struct {
-    Auth   service.AuthService
-    Prob   service.ProblemService
-    Sub    service.SubmissionService
-    Run    service.RunService
-    List   service.ListService
-    User   service.UserService
-    Logger *zap.Logger
-    Config *config.Config
+    Auth    service.AuthService
+    Prob    service.ProblemService
+    Sub     service.SubmissionService
+    Run     service.RunService
+    List    service.ListService
+    Discuss service.DiscussService
+    User    service.UserService
+    Logger  *zap.Logger
+    Config  *config.Config
 }
 
 func RegisterRoutes(e *echo.Echo, d *Deps) {
+    // Health Check
+    e.GET("/health", func(c echo.Context) error {
+        return c.JSON(http.StatusOK, map[string]string{"status": "ok", "version": "1.0"})
+    })
+    
     // API Group
     api := e.Group("/api")
 
@@ -33,9 +41,9 @@ func RegisterRoutes(e *echo.Echo, d *Deps) {
     // api.POST("/submissions", subHandler.Create)
     
     // Execution
-    runHandler := NewRunHandler(d.Run)
-    api.POST("/run", runHandler.ExecuteCode)
-    api.GET("/run/:runId/stream", runHandler.StreamRunLogs)
+    // runHandler := NewRunHandler(d.Run)
+    // api.POST("/run", runHandler.ExecuteCode)
+    // api.GET("/run/:runId/stream", runHandler.StreamRunLogs)
     
     // Lists
     listHandler := NewListHandler(d.List)
@@ -46,6 +54,17 @@ func RegisterRoutes(e *echo.Echo, d *Deps) {
     api.POST("/lists/:id/problems", listHandler.AddProblem)
     api.DELETE("/lists/:id/problems/:problemId", listHandler.RemoveProblem)
     
+    // Discuss
+    discussHandler := NewDiscussHandler(d.Discuss)
+    api.GET("/problems/:slug/discuss", discussHandler.ListPostsByProblem)
+    api.POST("/problems/:slug/discuss", discussHandler.CreatePost)
+
+    api.GET("/discuss/:id", discussHandler.GetPostByID)
+    api.GET("/discuss/:id/comments", discussHandler.ListCommentsForPost)
+    api.POST("/discuss/:id/comments", discussHandler.CreateComment)
+    api.POST("/discuss/:id/upvote", discussHandler.TogglePostUpvote)
+    api.POST("/discuss/comments/:commentId/upvote", discussHandler.ToggleCommentUpvote)
+
     // Auth (stubs for Phase 1)
     // authHandler := NewAuthHandler(d.Auth)
     // api.POST("/auth/logout", authHandler.Logout)

@@ -12,6 +12,7 @@ import { ProblemExamples } from "@/components/problems/solve/ProblemExamples";
 import { EditorHeader } from "@/components/problems/solve/EditorHeader";
 import { MonacoWrapper } from "@/components/problems/solve/MonacoWrapper";
 import { ConsolePanel } from "@/components/problems/solve/ConsolePanel";
+import { DiscussFeed } from "@/components/problems/solve/DiscussFeed";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 export default function ProblemSolvePage() {
@@ -19,7 +20,7 @@ export default function ProblemSolvePage() {
   const slug = params.slug as string;
   const { data: problem, isLoading, error } = useProblem(slug);
 
-  const [activeTab, setActiveTab] = useState<"description" | "submissions" | "editorial">("description");
+  const [activeTab, setActiveTab] = useState<"description" | "submissions" | "editorial" | "discuss">("description");
   const [language, setLanguage] = useState("cpp");
   const [code, setCode] = useState("");
   const [input, setInput] = useState("");
@@ -91,6 +92,9 @@ export default function ProblemSolvePage() {
                 </div>
               )}
             </div>
+          )}
+          {activeTab === "discuss" && (
+            <DiscussFeed slug={slug} />
           )}
         </div>
       </Panel>
