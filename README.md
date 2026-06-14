@@ -20,7 +20,7 @@ Whether you're mastering spatial math for Unity (C#), deep engine architecture f
 
 ---
 
-## 🧭 Philosophy
+## Philosophy
 
 GameCode is built on a few core principles:
 1. **Engine-Agnostic Concepts:** We focus on the math, algorithms, and architectural patterns underlying modern game engines, rather than engine-specific API memorization.
@@ -54,17 +54,17 @@ GameCode employs a highly optimized monorepo architecture, utilizing a decoupled
 
 ---
 
-## ✨ Features
+## Features
 
-- ⚡ **Multi-Language Support**: Write and execute code natively in C#, C++, Lua, and GDScript.
-- 🎯 **Advanced Submission Evaluation**: Batch testcase evaluation running seamlessly against Judge0 APIs.
-- 📊 **Progress Tracking**: Track your attempts, accepted solutions, runtime performance, and memory footprint.
-- 🔒 **Secure Authentication**: Robust session management out-of-the-box with NextAuth.
-- 🌙 **Gorgeous Dark Mode**: A sleek, distraction-free interface built for late-night coding.
+- **Multi-Language Support**: Write and execute code natively in C#, C++, Lua, and GDScript.
+- **Advanced Submission Evaluation**: Batch testcase evaluation running seamlessly against Judge0 APIs.
+- **Progress Tracking**: Track your attempts, accepted solutions, runtime performance, and memory footprint.
+- **Secure Authentication**: Robust session management out-of-the-box with NextAuth.
+- **Distraction-Free Environment**: A sleek, dark-themed interface built for extended focus.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 Before you begin, ensure you have the following installed:
@@ -103,9 +103,9 @@ The application will be live at `http://localhost:3000`.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-GameCode is a community-driven, open-source project. We welcome contributions from developers of all skill levels! Whether you want to add new spatial math problems, optimize the execution engine, or refine the UI, we'd love your help.
+GameCode is an open-source project designed for rigorous engineering standards. We welcome contributions from developers dedicated to advancing game development education. Whether you want to add new spatial math problems, optimize the execution engine, or refine the architecture, your expertise is valued.
 
 ### How to Contribute
 1. **Fork the Repository**
@@ -118,12 +118,12 @@ Please read our `CONTRIBUTING.md` (coming soon) for details on our code of condu
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
-  <i>Built with ❤️ for Game Developers.</i>
+  <i>Engineered for Game Developers.</i>
 </div>
