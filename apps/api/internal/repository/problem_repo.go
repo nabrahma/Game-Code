@@ -12,6 +12,7 @@ import (
 type ProblemRepo interface {
     List(ctx context.Context, filter domain.ProblemFilter, p pagination.Params) (*pagination.Page[domain.ProblemSummary], error)
     GetBySlug(ctx context.Context, slug string) (*domain.Problem, error)
+    ToggleFavorite(ctx context.Context, userID uuid.UUID, problemID uuid.UUID) (bool, error)
 }
 
 type problemRepo struct {
@@ -72,4 +73,26 @@ func (r *problemRepo) GetBySlug(ctx context.Context, slug string) (*domain.Probl
             {Language: domain.LanguageCPP, Code: "class Solution {\npublic:\n    vector<int> solve(vector<int>& nums) {\n        \n    }\n};"},
         },
     }, nil
+}
+
+func (r *problemRepo) ToggleFavorite(ctx context.Context, userID uuid.UUID, problemID uuid.UUID) (bool, error) {
+    var count int64
+    r.db.WithContext(ctx).Model(&domain.Favorite{}).
+        Where("user_id = ? AND problem_id = ?", userID, problemID).
+        Count(&count)
+
+    if count > 0 {
+        // Already favorited, so unfavorite
+        err := r.db.WithContext(ctx).
+            Where("user_id = ? AND problem_id = ?", userID, problemID).
+            Delete(&domain.Favorite{}).Error
+        return false, err
+    } else {
+        // Not favorited, so add favorite
+        err := r.db.WithContext(ctx).Create(&domain.Favorite{
+            UserID:    userID,
+            ProblemID: problemID,
+        }).Error
+        return true, err
+    }
 }

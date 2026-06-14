@@ -69,6 +69,7 @@ export default function ProblemSolvePage() {
       {/* Left Panel: Description */}
       <Panel defaultSize={40} minSize={25} className="flex flex-col overflow-hidden rounded-lg border border-zinc-800 bg-[#0A0A0A]">
         <ProblemDetailHeader 
+          problemId={problem.id}
           title={problem.title} 
           slug={problem.slug} 
           difficulty={problem.difficulty}

@@ -15,6 +15,7 @@ import (
 type ProblemService interface {
     GetProblems(ctx context.Context, filter domain.ProblemFilter, p pagination.Params) (*pagination.Page[domain.ProblemSummary], error)
     GetProblem(ctx context.Context, slug string) (*domain.Problem, error)
+    ToggleFavorite(ctx context.Context, userID uuid.UUID, problemID uuid.UUID) (bool, error)
 }
 
 type problemService struct {
@@ -76,4 +77,8 @@ func (s *problemService) GetProblem(ctx context.Context, slug string) (*domain.P
     }
 
     return prob, nil
+}
+
+func (s *problemService) ToggleFavorite(ctx context.Context, userID uuid.UUID, problemID uuid.UUID) (bool, error) {
+    return s.repo.ToggleFavorite(ctx, userID, problemID)
 }

@@ -3,15 +3,17 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, LayoutList } from "lucide-react";
 import { DifficultyBadge } from "@/components/ui/DifficultyBadge";
 import { FavoriteToggle } from "./FavoriteToggle";
+import { AddToListDropdown } from "./AddToListDropdown";
 
 interface ProblemDetailHeaderProps {
+  problemId: string;
   title: string;
   slug: string;
   difficulty: "easy" | "medium" | "hard";
   isFavorite?: boolean;
 }
 
-export function ProblemDetailHeader({ title, slug, difficulty, isFavorite }: ProblemDetailHeaderProps) {
+export function ProblemDetailHeader({ problemId, title, slug, difficulty, isFavorite }: ProblemDetailHeaderProps) {
   return (
     <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-3">
       <div className="flex items-center gap-4">
@@ -27,6 +29,7 @@ export function ProblemDetailHeader({ title, slug, difficulty, isFavorite }: Pro
       </div>
 
       <div className="flex items-center gap-2">
+        <AddToListDropdown problemId={problemId} />
         <FavoriteToggle slug={slug} initialIsFavorite={isFavorite} />
         
         <div className="flex items-center gap-1 border-l border-zinc-800 pl-4">

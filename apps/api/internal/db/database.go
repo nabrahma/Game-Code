@@ -35,6 +35,9 @@ func InitGORM(cfg *config.Config) (*gorm.DB, error) {
         &domain.Submission{},
         &domain.TestResult{},
         &domain.UserProblemProgress{},
+        &domain.ProblemList{},
+        &domain.ProblemListItem{},
+        &domain.Favorite{},
     )
     if err != nil {
         log.Printf("GORM AutoMigrate failed (safe to ignore if using golang-migrate): %v", err)

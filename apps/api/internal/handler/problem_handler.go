@@ -8,6 +8,7 @@ import (
     "github.com/gc-platform/api/internal/domain"
     "github.com/gc-platform/api/internal/service"
     "github.com/gc-platform/api/pkg/pagination"
+    "github.com/google/uuid"
 )
 
 type ProblemHandler struct {
@@ -73,5 +74,27 @@ func (h *ProblemHandler) ToggleFavorite(c echo.Context) error {
         return echo.NewHTTPError(http.StatusBadRequest, "slug is required")
     }
     
-    return c.NoContent(http.StatusOK)
+    // In a real app we extract from JWT token context
+    userIDStr := c.QueryParam("user_id")
+    if userIDStr == "" {
+        userIDStr = "00000000-0000-0000-0000-000000000001"
+    }
+    userID, err := uuid.Parse(userIDStr)
+    if err != nil {
+        return echo.NewHTTPError(http.StatusBadRequest, "invalid user id")
+    }
+
+    problem, err := h.probSvc.GetProblem(c.Request().Context(), slug)
+    if err != nil {
+        return echo.NewHTTPError(http.StatusNotFound, "problem not found")
+    }
+
+    isFavorited, err := h.probSvc.ToggleFavorite(c.Request().Context(), userID, problem.ID)
+    if err != nil {
+        return echo.NewHTTPError(http.StatusInternalServerError, "failed to toggle favorite")
+    }
+
+    return c.JSON(http.StatusOK, map[string]interface{}{
+        "is_favorite": isFavorited,
+    })
 }

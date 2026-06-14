@@ -23,6 +23,9 @@ type Config struct {
 }
 
 func Load() *Config {
+    viper.SetConfigFile(".env")
+    // Ignore error if .env is not found (e.g. in production)
+    _ = viper.ReadInConfig()
     viper.AutomaticEnv()
     viper.SetDefault("PORT", "8080")
     viper.SetDefault("ACCESS_TOKEN_TTL", 15)

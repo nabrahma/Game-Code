@@ -37,6 +37,15 @@ func RegisterRoutes(e *echo.Echo, d *Deps) {
     api.POST("/run", runHandler.ExecuteCode)
     api.GET("/run/:runId/stream", runHandler.StreamRunLogs)
     
+    // Lists
+    listHandler := NewListHandler(d.List)
+    api.GET("/lists/curated", listHandler.GetCuratedLists)
+    api.GET("/lists/user", listHandler.GetUserLists)
+    api.GET("/lists/:slug", listHandler.GetBySlug)
+    api.POST("/lists", listHandler.CreateList)
+    api.POST("/lists/:id/problems", listHandler.AddProblem)
+    api.DELETE("/lists/:id/problems/:problemId", listHandler.RemoveProblem)
+    
     // Auth (stubs for Phase 1)
     // authHandler := NewAuthHandler(d.Auth)
     // api.POST("/auth/logout", authHandler.Logout)

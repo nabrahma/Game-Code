@@ -10,7 +10,6 @@ import (
     "github.com/labstack/echo/v4"
     "github.com/gc-platform/api/internal/config"
     "github.com/gc-platform/api/internal/db"
-    "github.com/gc-platform/api/internal/executor"
     "github.com/gc-platform/api/internal/handler"
     "github.com/gc-platform/api/internal/middleware"
     "github.com/gc-platform/api/internal/repository"
@@ -52,9 +51,6 @@ func main() {
     listSvc   := service.NewListService(listRepo)
     userSvc   := service.NewUserService(userRepo, subRepo)
 
-    // 6. Start asynq workers (goroutine-based, same process as Option A)
-    execWorker := executor.NewWorker(cfg, rdb, subRepo, probRepo, logger)
-    go execWorker.Start()
 
     // 7. Build Echo router
     e := echo.New()
