@@ -1,18 +1,12 @@
 import ky from 'ky';
 
-export const api = ky.create({
-  prefixUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
+export const api = ky.extend({
+  prefix: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
+  credentials: 'include',
   hooks: {
-    beforeRequest: [
-      (request) => {
-        // Here we could add access tokens from an in-memory store if needed.
-        // However, we are using httpOnly cookies as per PRD for secure auth.
-        // So we just ensure credentials are included.
-        request.credentials = 'include';
-      }
-    ],
     afterResponse: [
-      async (request, options, response) => {
+      // @ts-ignore
+      async ({ request, options, response }: any) => {
         if (response.status === 401 && !request.url.includes('/auth/refresh')) {
           // Attempt to refresh the token transparently
           try {

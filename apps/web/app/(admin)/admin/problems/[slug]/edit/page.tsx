@@ -6,12 +6,12 @@ import { ArrowLeft, Save, Code, Database, FileText, Settings } from "lucide-reac
 import { TestCaseManager } from "./TestCaseManager";
 import { StarterCodeEditor } from "./StarterCodeEditor";
 import { EditorialEditor } from "./EditorialEditor";
-import { useProblem } from "@/hooks/useProblem";
+import { useProblem } from "@/lib/hooks/useProblems";
 
 type Tab = "general" | "testcases" | "startercode" | "editorial";
 
 export default function EditProblemPage({ params }: { params: { slug: string } }) {
-  const { data: problem, isLoading, mutate } = useProblem(params.slug);
+  const { data: problem, isLoading, refetch } = useProblem(params.slug);
   const [activeTab, setActiveTab] = useState<Tab>("general");
   const [saving, setSaving] = useState(false);
   
@@ -45,7 +45,7 @@ export default function EditProblemPage({ params }: { params: { slug: string } }
         body: JSON.stringify(formData)
       });
       if (res.ok) {
-        mutate();
+        refetch();
       }
     } catch (err) {
       console.error(err);
@@ -170,9 +170,9 @@ export default function EditProblemPage({ params }: { params: { slug: string } }
             </form>
           )}
 
-          {activeTab === "testcases" && <TestCaseManager problemId={problem.id} initialTestCases={problem.test_cases || []} onUpdate={() => mutate()} />}
-          {activeTab === "startercode" && <StarterCodeEditor problemId={problem.id} initialCodes={problem.starter_code || []} onUpdate={() => mutate()} />}
-          {activeTab === "editorial" && <EditorialEditor problemId={problem.id} initialEditorial={problem.editorial} onUpdate={() => mutate()} />}
+          {activeTab === "testcases" && <TestCaseManager problemId={problem.id} initialTestCases={problem.test_cases || []} onUpdate={() => refetch()} />}
+          {activeTab === "startercode" && <StarterCodeEditor problemId={problem.id} initialCodes={problem.starter_code || []} onUpdate={() => refetch()} />}
+          {activeTab === "editorial" && <EditorialEditor problemId={problem.id} initialEditorial={problem.editorial} onUpdate={() => refetch()} />}
         </div>
       </div>
     </div>

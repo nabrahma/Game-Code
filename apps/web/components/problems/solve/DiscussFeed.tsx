@@ -3,7 +3,7 @@ import { MessageSquare, ArrowUp, Plus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { DiscussPostForm } from './DiscussPostForm';
 import { DiscussPostDetail } from './DiscussPostDetail';
-import { EmptyState } from '../ui/EmptyState';
+import { EmptyState } from '../../ui/EmptyState';
 
 interface Post {
   id: string;

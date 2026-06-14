@@ -2,7 +2,6 @@ package middleware
 
 import (
     "fmt"
-    "net/http"
 
     "github.com/getsentry/sentry-go"
     "github.com/labstack/echo/v4"

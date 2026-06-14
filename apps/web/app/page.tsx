@@ -61,7 +61,7 @@ export default function Home() {
       </main>
 
       {/* Decorative Grid */}
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
+      <div className="absolute inset-0 bg-indigo-900/5 opacity-20 pointer-events-none" />
     </div>
   );
 }

@@ -66,21 +66,24 @@ func (r *problemRepo) GetBySlug(ctx context.Context, slug string) (*domain.Probl
     // Stub implementation
     return &domain.Problem{
         Slug:           slug,
-        Title:          "Sample Problem Title",
-        Difficulty:     domain.DifficultyMedium,
+        Title:          "Two Sum",
+        Difficulty:     domain.DifficultyEasy,
         Status:         domain.ProblemStatusPublished,
-        Description:    "This is a sample description of the problem context. You need to implement an algorithm to solve this.\n\n### Requirements\n- Be fast\n- Be memory efficient",
-        Constraints:    "1 <= N <= 100",
-        AcceptanceRate: 50.0,
+        Description:    "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input would have **exactly one solution**, and you may not use the same element twice.\n\nYou can return the answer in any order.",
+        Constraints:    "2 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9\n-10^9 <= target <= 10^9\nOnly one valid answer exists.",
+        AcceptanceRate: 49.2,
         Examples: []domain.ProblemExample{
-            {ID: uuid.New(), OrderIndex: 1, Input: "nums = [1,2,3]", Output: "[1,2,3]", Explanation: "Just return the array."},
+            {ID: uuid.New(), OrderIndex: 1, Input: "nums = [2,7,11,15], target = 9", Output: "[0,1]", Explanation: "Because nums[0] + nums[1] == 9, we return [0, 1]."},
+            {ID: uuid.New(), OrderIndex: 2, Input: "nums = [3,2,4], target = 6", Output: "[1,2]", Explanation: ""},
         },
         Hints: []domain.ProblemHint{
-            {ID: uuid.New(), OrderIndex: 1, Content: "Think about using a hash map."},
+            {ID: uuid.New(), OrderIndex: 1, Content: "A really brute force way would be to search for all possible pairs of numbers but that would be too slow. Again, it's best to try out brute force solutions for just for completeness. It is from these brute force solutions that you can come up with optimizations."},
+            {ID: uuid.New(), OrderIndex: 2, Content: "So, if we fix one of the numbers, say `x`, we have to scan the entire array to find the next number `y` which is `value - x` where value is the input parameter. Can we change our array keeping so that this search becomes faster?"},
         },
         StarterCode: []domain.StarterCode{
             {Language: domain.LanguageCSharp, Code: "public class Solution {\n    public int[] Solve(int[] nums) {\n        \n    }\n}"},
             {Language: domain.LanguageCPP, Code: "class Solution {\npublic:\n    vector<int> solve(vector<int>& nums) {\n        \n    }\n};"},
+            {Language: domain.LanguageLua, Code: "local Solution = {}\n\nfunction Solution:solve(nums)\n    \nend\n\nreturn Solution"},
         },
     }, nil
 }

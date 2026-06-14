@@ -64,7 +64,7 @@ function ProblemListContent() {
       {error ? (
         <ErrorState message="Failed to load problems. Please try again later." />
       ) : (
-        <ProblemTable problems={data?.problems || []} isLoading={isLoading} />
+        <ProblemTable problems={data?.items || []} isLoading={isLoading} />
       )}
     </div>
   );

@@ -26,7 +26,6 @@ export function EditorHeader({
         >
           <option value="cpp">C++</option>
           <option value="csharp">C#</option>
-          <option value="gdscript">GDScript</option>
           <option value="lua">Lua</option>
         </select>
       </div>

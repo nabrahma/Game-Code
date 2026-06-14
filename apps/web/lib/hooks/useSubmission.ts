@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "../api";
+import { api } from "../api";
 import { useState, useEffect } from "react";
 
 export type SubmissionVerdict = "pending" | "accepted" | "wrong_answer" | "time_limit_exceeded" | "memory_limit_exceeded" | "runtime_error" | "compile_error" | "internal_error";

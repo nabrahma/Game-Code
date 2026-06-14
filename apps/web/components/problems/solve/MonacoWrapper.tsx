@@ -26,7 +26,6 @@ export function MonacoWrapper({ language, code, onChange }: MonacoWrapperProps) 
   }, [monaco]);
 
   const mapLanguage = (lang: string) => {
-    if (lang === "gdscript") return "python"; // Fallback until we inject a custom gdscript tokenizer
     return lang;
   };
 

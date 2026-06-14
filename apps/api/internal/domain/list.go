@@ -28,7 +28,7 @@ type ProblemListItem struct {
     AddedAt    time.Time `json:"added_at" gorm:"default:now()"`
 
     // Relation
-    Problem *ProblemSummary `json:"problem,omitempty" gorm:"foreignKey:ProblemID"`
+    Problem *ProblemSummary `json:"problem,omitempty" gorm:"-"`
 }
 
 type Favorite struct {

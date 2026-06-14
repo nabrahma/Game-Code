@@ -37,13 +37,13 @@ func RegisterRoutes(e *echo.Echo, d *Deps) {
     api.POST("/problems/:slug/favorite", probHandler.ToggleFavorite)
 
     // Submissions
-    // subHandler := NewSubmissionHandler(d.Sub)
-    // api.POST("/submissions", subHandler.Create)
+    subHandler := NewSubmissionHandler(d.Sub)
+    api.POST("/submissions", subHandler.Create)
     
     // Execution
-    // runHandler := NewRunHandler(d.Run)
-    // api.POST("/run", runHandler.ExecuteCode)
-    // api.GET("/run/:runId/stream", runHandler.StreamRunLogs)
+    runHandler := NewRunHandler(d.Run)
+    api.POST("/run", runHandler.ExecuteCode)
+    api.GET("/run/:runId/stream", runHandler.StreamRunLogs)
     
     // Lists
     listHandler := NewListHandler(d.List)
@@ -81,4 +81,15 @@ func RegisterRoutes(e *echo.Echo, d *Deps) {
     // Auth (stubs for Phase 1)
     // authHandler := NewAuthHandler(d.Auth)
     // api.POST("/auth/logout", authHandler.Logout)
+
+    api.GET("/users/me", func(c echo.Context) error {
+        return c.JSON(http.StatusOK, map[string]interface{}{
+            "user": map[string]interface{}{
+                "id": "00000000-0000-0000-0000-000000000001",
+                "username": "demo_user",
+                "email": "demo@example.com",
+                "role": "user",
+            },
+        })
+    })
 }

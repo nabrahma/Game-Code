@@ -97,7 +97,7 @@ func main() {
     // 10. Graceful shutdown
     go func() {
         if err := e.Start(":" + cfg.Port); err != nil {
-            logger.Info("shutting down server")
+            logger.Info("shutting down server", zap.Error(err))
         }
     }()
 

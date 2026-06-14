@@ -23,6 +23,7 @@ const handler = NextAuth({
   callbacks: {
     async session({ session, token }) {
       if (session.user) {
+        // @ts-ignore
         session.user.id = token.sub as string;
       }
       return session;

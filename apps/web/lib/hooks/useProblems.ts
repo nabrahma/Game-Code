@@ -20,7 +20,7 @@ export interface ProblemSummary {
 }
 
 export interface ProblemListResponse {
-  problems: ProblemSummary[];
+  items: ProblemSummary[];
   total: number;
 }
 
